@@ -1,0 +1,112 @@
+@use '@/styles/variables.scss' as *;
+
+.recordCard {
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.99);
+    opacity: 0.95;
+  }
+
+  &.danger {
+    border-left: 6rpx solid $color-risk-danger;
+  }
+
+  &.warning {
+    border-left: 6rpx solid $color-risk-warning;
+  }
+
+  &.attention {
+    border-left: 6rpx solid $color-risk-attention;
+  }
+
+  &.normal {
+    border-left: 6rpx solid $color-risk-normal;
+  }
+}
+
+.recordHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.recordInfo {
+  display: flex;
+  align-items: center;
+}
+
+.gunName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.gunCode {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-left: $spacing-xs;
+}
+
+.riskTag {
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-xs;
+}
+
+.riskText {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+}
+
+.recordBody {
+  margin-bottom: $spacing-md;
+}
+
+.actionRow {
+  display: flex;
+  margin-bottom: $spacing-sm;
+}
+
+.actionLabel {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  width: 80rpx;
+  flex-shrink: 0;
+}
+
+.actionValue {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}
+
+.recordDesc {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: $line-height-normal;
+  @include text-ellipsis-multi(2);
+}
+
+.recordFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.recordDate {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.recordTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}

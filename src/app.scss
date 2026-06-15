@@ -1,0 +1,58 @@
+@use '@/styles/compat.scss';
+@use '@/styles/variables.scss' as *;
+
+// 全局样式
+page {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Hiragino Sans GB',
+    sans-serif;
+  font-size: $font-size-md;
+  line-height: $line-height-normal;
+  color: $color-text-primary;
+  background: linear-gradient(180deg, #E3F2FD 0%, $color-bg-page 100%);
+  min-height: 100vh;
+}
+
+// 通用容器
+.container {
+  padding: 0 $page-padding;
+  max-width: $max-content-width;
+  margin: 0 auto;
+}
+
+// 页面标题
+.pageTitle {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-lg;
+}
+
+// 风险等级标签样式
+.riskTag {
+  display: inline-flex;
+  align-items: center;
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-sm;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  
+  &.normal {
+    background-color: $color-bg-risk-normal;
+    color: $color-risk-normal;
+  }
+  
+  &.attention {
+    background-color: $color-bg-risk-attention;
+    color: #FF8F00;
+  }
+  
+  &.warning {
+    background-color: $color-bg-risk-warning;
+    color: $color-risk-warning;
+  }
+  
+  &.danger {
+    background-color: $color-bg-risk-danger;
+    color: $color-risk-danger;
+  }
+}

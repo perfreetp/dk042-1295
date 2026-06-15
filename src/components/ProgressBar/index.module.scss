@@ -1,0 +1,26 @@
+@use '@/styles/variables.scss' as *;
+
+.progressWrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.progressBar {
+  flex: 1;
+  border-radius: $radius-round;
+  overflow: hidden;
+}
+
+.progressFill {
+  border-radius: $radius-round;
+  transition: width $transition-base ease;
+}
+
+.progressText {
+  margin-left: $spacing-md;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  min-width: 80rpx;
+  text-align: right;
+}

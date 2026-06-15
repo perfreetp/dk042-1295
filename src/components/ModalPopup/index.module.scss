@@ -1,0 +1,124 @@
+@use 'sass:color';
+@use '@/styles/variables.scss' as *;
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: $spacing-xl;
+}
+
+.modalContent {
+  width: 100%;
+  max-width: 650rpx;
+  max-height: 80vh;
+  background-color: $color-bg-card;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-popup;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modalHeader {
+  padding: $spacing-xl $spacing-lg $spacing-lg;
+  text-align: center;
+  border-bottom: 1rpx solid $color-divider;
+}
+
+.alertIcon {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: $radius-round;
+  background: linear-gradient(135deg, $color-warning 0%, color.adjust($color-warning, $lightness: 10%) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto $spacing-md;
+}
+
+.alertIconText {
+  font-size: $font-size-xxl;
+  color: $color-text-white;
+  font-weight: $font-weight-bold;
+}
+
+.modalTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.modalBody {
+  flex: 1;
+  padding: $spacing-lg;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.sectionTitle {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-md;
+  display: block;
+}
+
+.gunList {
+  flex: 1;
+  max-height: 500rpx;
+}
+
+.modalFooter {
+  padding: $spacing-lg;
+  display: flex;
+  gap: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.modalBtn {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-lg;
+  border-radius: $radius-button;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.confirmBtn {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  border: none;
+
+  .btnText {
+    color: $color-text-white;
+  }
+}
+
+.closeBtn {
+  background-color: $color-bg-hover;
+  border: none;
+}
+
+.closeBtnText {
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  color: $color-text-secondary;
+}
+
+.btnText {
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+}

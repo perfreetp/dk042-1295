@@ -1,0 +1,58 @@
+@use '@/styles/variables.scss' as *;
+
+.actionButton {
+  @include button-reset;
+  border-radius: $radius-button;
+  padding: 0 $spacing-xl;
+  transition: all $transition-base;
+  border: none;
+  min-width: 160rpx;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.97);
+  }
+
+  &.block {
+    width: 100%;
+  }
+
+  &.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  &.small {
+    padding: 0 $spacing-lg;
+  }
+
+  &.large {
+    padding: 0 $spacing-xl * 1.5;
+  }
+}
+
+.buttonContent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-sm;
+  width: 100%;
+}
+
+.buttonIcon {
+  font-size: $font-size-lg;
+}
+
+.buttonText {
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  white-space: nowrap;
+}
+
+.small .buttonText {
+  font-size: $font-size-sm;
+}
+
+.large .buttonText {
+  font-size: $font-size-lg;
+}

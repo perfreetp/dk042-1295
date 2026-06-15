@@ -1,0 +1,46 @@
+@use '@/styles/variables.scss' as *;
+
+.riskCard {
+  display: flex;
+  align-items: center;
+  padding: $spacing-lg;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+}
+
+.riskIndicator {
+  width: 8rpx;
+  height: 80rpx;
+  border-radius: $radius-xs;
+  margin-right: $spacing-md;
+}
+
+.riskContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.riskCount {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  line-height: 1.2;
+}
+
+.riskLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-top: $spacing-xs;
+}
+
+.riskText {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  margin-top: $spacing-xs;
+}

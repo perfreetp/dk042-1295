@@ -1,0 +1,204 @@
+@use 'sass:color';
+@use '@/styles/variables.scss' as *;
+
+.taskCard {
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.99);
+    opacity: 0.95;
+  }
+
+  &.danger {
+    border-left: 6rpx solid $color-risk-danger;
+  }
+
+  &.warning {
+    border-left: 6rpx solid $color-risk-warning;
+  }
+
+  &.attention {
+    border-left: 6rpx solid $color-risk-attention;
+  }
+
+  &.normal {
+    border-left: 6rpx solid $color-risk-normal;
+  }
+}
+
+.taskHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: $spacing-md;
+}
+
+.taskTitleRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  flex: 1;
+}
+
+.taskTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.urgentTag {
+  padding: $spacing-xs $spacing-sm;
+  background-color: $color-error;
+  border-radius: $radius-xs;
+}
+
+.urgentText {
+  font-size: $font-size-xs;
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+}
+
+.riskTag {
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-xs;
+  margin-left: $spacing-md;
+}
+
+.riskTagText {
+  font-size: $font-size-xs;
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+}
+
+.taskInfo {
+  background-color: rgba(0, 0, 0, 0.02);
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.infoRow {
+  display: flex;
+  margin-bottom: $spacing-sm;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.infoLabel {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  width: 120rpx;
+  flex-shrink: 0;
+}
+
+.infoValue {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  flex: 1;
+}
+
+.taskDesc {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: $line-height-normal;
+  margin-bottom: $spacing-md;
+}
+
+.measuresBox {
+  background-color: rgba(30, 136, 229, 0.08);
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.measuresLabel {
+  font-size: $font-size-xs;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+  display: block;
+  margin-bottom: $spacing-xs;
+}
+
+.measuresText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: $line-height-normal;
+}
+
+.taskFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.createTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.actionButtons {
+  display: flex;
+  gap: $spacing-sm;
+}
+
+.actionBtn {
+  @include button-reset;
+  height: $button-height-sm;
+  padding: 0 $spacing-lg;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.96);
+  }
+}
+
+.primaryBtn {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  border: none;
+
+  .btnText {
+    color: $color-text-white;
+  }
+}
+
+.dangerBtn {
+  background: linear-gradient(135deg, $color-error 0%, color.adjust($color-error, $lightness: 10%) 100%);
+  border: none;
+
+  .btnText {
+    color: $color-text-white;
+  }
+}
+
+.successBtn {
+  background: linear-gradient(135deg, $color-success 0%, color.adjust($color-success, $lightness: 10%) 100%);
+  border: none;
+
+  .btnText {
+    color: $color-text-white;
+  }
+}
+
+.btnText {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+}
+
+.completedTime {
+  font-size: $font-size-xs;
+  color: $color-success;
+  font-weight: $font-weight-medium;
+}
