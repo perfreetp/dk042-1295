@@ -161,7 +161,8 @@ const ReportPage: React.FC = () => {
       description: description || '异常上报',
       measures: measuresStr,
       photoUrls: photos,
-      reporter: userInfo.name
+      reporter: userInfo.name,
+      riskLevel: riskLevel
     };
 
     const newTask = createExceptionTask(taskData);
@@ -197,22 +198,18 @@ const ReportPage: React.FC = () => {
       record: newRecord
     });
 
-    Taro.showToast({
-      title: '上报成功',
-      icon: 'success'
-    });
+    setSelectedGun(null);
+    setRiskLevel(null);
+    setTemperature('');
+    setTemperatureRise('');
+    setDescription('');
+    setMeasures([]);
+    setCustomMeasure('');
+    setPhotos([]);
 
-    setTimeout(() => {
-      setSelectedGun(null);
-      setRiskLevel(null);
-      setTemperature('');
-      setTemperatureRise('');
-      setDescription('');
-      setMeasures([]);
-      setCustomMeasure('');
-      setPhotos([]);
-      Taro.switchTab({ url: '/pages/tasks/index' });
-    }, 1500);
+    Taro.navigateTo({
+      url: `/pages/report-result/index?taskId=${newTask.id}&messageId=${newMessage.id}&recordId=${newRecord.id}`
+    });
   }, [selectedGun, riskLevel, temperature, temperatureRise, description, measures, customMeasure, photos, userInfo.name, addTask, addMessage, addRecord]);
 
   return (

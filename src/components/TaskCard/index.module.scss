@@ -217,21 +217,41 @@
   font-weight: $font-weight-medium;
 }
 
-.photoPreview {
+.photoSection {
+  margin-top: $spacing-sm;
+}
+
+.photoLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  display: block;
+  margin-bottom: $spacing-sm;
+}
+
+.photoGrid {
+  display: flex;
+  gap: $spacing-sm;
+}
+
+.photoThumb {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: $radius-md;
+  background-color: $color-bg-light;
+  border: 2rpx solid $color-border;
   display: flex;
   align-items: center;
-  margin-top: $spacing-sm;
-  padding: $spacing-sm $spacing-md;
-  background-color: $color-bg-light;
-  border-radius: $radius-md;
+  justify-content: center;
+  overflow: hidden;
 }
 
-.photoIcon {
-  font-size: $font-size-lg;
-  margin-right: $spacing-sm;
+.photoThumbIcon {
+  font-size: 48rpx;
+  opacity: 0.6;
 }
 
-.photoText {
+.photoMoreText {
   font-size: $font-size-sm;
-  color: $color-text-secondary;
+  color: $color-text-tertiary;
+  font-weight: $font-weight-medium;
 }

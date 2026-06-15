@@ -4,6 +4,7 @@ import { RiskLevel } from '@/types';
 import {
   getRiskLevelText,
   getRiskLevelColor,
+  getShiftTypeText,
   classnames,
   getCurrentDate
 } from '@/utils';
@@ -12,10 +13,43 @@ import { useAppContext } from '@/context/AppContext';
 import styles from './index.module.scss';
 
 const RecordsPage: React.FC = () => {
-  const { userInfo, records, completionRate } = useAppContext();
+  const { userInfo, shiftInfo, tasks, records, completionRate } = useAppContext();
   const [dateFilter, setDateFilter] = useState<string>('all');
   const [riskFilter, setRiskFilter] = useState<string>('all');
   const today = getCurrentDate();
+
+  const shiftSummary = useMemo(() => {
+    const todayTasks = tasks;
+    const todayCompleted = todayTasks.filter(t => t.status === 'completed').length;
+    const todayPending = todayTasks.filter(t => t.status === 'pending').length;
+    const todayProcessing = todayTasks.filter(t => t.status === 'processing').length;
+    const todayReports = records.filter(r => r.action === '异常上报').length;
+
+    const byRisk = {
+      normal: todayTasks.filter(t => t.riskLevel === 'normal').length,
+      attention: todayTasks.filter(t => t.riskLevel === 'attention').length,
+      warning: todayTasks.filter(t => t.riskLevel === 'warning').length,
+      danger: todayTasks.filter(t => t.riskLevel === 'danger').length
+    };
+
+    const exceptionReports = records.filter(r => r.action === '异常上报');
+    const reportsByRisk = {
+      normal: exceptionReports.filter(r => r.riskLevel === 'normal').length,
+      attention: exceptionReports.filter(r => r.riskLevel === 'attention').length,
+      warning: exceptionReports.filter(r => r.riskLevel === 'warning').length,
+      danger: exceptionReports.filter(r => r.riskLevel === 'danger').length
+    };
+
+    return {
+      totalTasks: todayTasks.length,
+      completed: todayCompleted,
+      pending: todayPending,
+      processing: todayProcessing,
+      reports: todayReports,
+      byRisk,
+      reportsByRisk
+    };
+  }, [tasks, records]);
 
   const statistics = useMemo(() => {
     const total = records.length;
@@ -99,6 +133,68 @@ const RecordsPage: React.FC = () => {
           <View className={styles.statItem}>
             <Text className={styles.statNumber}>{completionRate}%</Text>
             <Text className={styles.statLabel}>完成率</Text>
+          </View>
+        </View>
+      </View>
+
+      <View className={styles.shiftSummarySection}>
+        <View className={styles.shiftSummaryHeader}>
+          <Text className={styles.shiftSummaryTitle}>本班汇总</Text>
+          <Text className={styles.shiftSummaryShift}>{getShiftTypeText(shiftInfo.shiftType)} · {shiftInfo.startTime}-{shiftInfo.endTime}</Text>
+        </View>
+
+        <View className={styles.summaryCards}>
+          <View className={styles.summaryCard}>
+            <Text className={styles.summaryCardNumber} style={{ color: '#00C853' }}>{shiftSummary.completed}</Text>
+            <Text className={styles.summaryCardLabel}>已完成任务</Text>
+          </View>
+          <View className={styles.summaryCard}>
+            <Text className={styles.summaryCardNumber} style={{ color: '#1E88E5' }}>{shiftSummary.processing}</Text>
+            <Text className={styles.summaryCardLabel}>处理中</Text>
+          </View>
+          <View className={styles.summaryCard}>
+            <Text className={styles.summaryCardNumber} style={{ color: '#FF9100' }}>{shiftSummary.pending}</Text>
+            <Text className={styles.summaryCardLabel}>待处理</Text>
+          </View>
+          <View className={styles.summaryCard}>
+            <Text className={styles.summaryCardNumber} style={{ color: '#FF1744' }}>{shiftSummary.reports}</Text>
+            <Text className={styles.summaryCardLabel}>异常上报</Text>
+          </View>
+        </View>
+
+        <View className={styles.summaryDetail}>
+          <View className={styles.summaryDetailRow}>
+            <Text className={styles.summaryDetailLabel}>任务风险分布</Text>
+            <View className={styles.riskDistribution}>
+              {(['danger', 'warning', 'attention', 'normal'] as RiskLevel[]).map((level) => (
+                shiftSummary.byRisk[level] > 0 && (
+                  <View key={level} className={styles.riskDistItem} style={{ backgroundColor: riskBgColors[level] }}>
+                    <Text style={{ color: getRiskLevelColor(level), fontSize: '22rpx', fontWeight: 'bold' }}>
+                      {shiftSummary.byRisk[level]}
+                    </Text>
+                    <Text style={{ fontSize: '20rpx', color: '#86909C' }}>{getRiskLevelText(level)}</Text>
+                  </View>
+                )
+              ))}
+            </View>
+          </View>
+          <View className={styles.summaryDetailRow}>
+            <Text className={styles.summaryDetailLabel}>异常上报分布</Text>
+            <View className={styles.riskDistribution}>
+              {(['danger', 'warning', 'attention', 'normal'] as RiskLevel[]).map((level) => (
+                shiftSummary.reportsByRisk[level] > 0 && (
+                  <View key={level} className={styles.riskDistItem} style={{ backgroundColor: riskBgColors[level] }}>
+                    <Text style={{ color: getRiskLevelColor(level), fontSize: '22rpx', fontWeight: 'bold' }}>
+                      {shiftSummary.reportsByRisk[level]}
+                    </Text>
+                    <Text style={{ fontSize: '20rpx', color: '#86909C' }}>{getRiskLevelText(level)}</Text>
+                  </View>
+                )
+              ))}
+              {Object.values(shiftSummary.reportsByRisk).every(v => v === 0) && (
+                <Text style={{ fontSize: '24rpx', color: '#86909C' }}>暂无上报</Text>
+              )}
+            </View>
           </View>
         </View>
       </View>

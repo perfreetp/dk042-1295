@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, Button } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import { Task } from '@/types';
@@ -25,6 +25,13 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onProcess, onComplete, onCall
   const statusColor = getTaskStatusColor(task.status);
   const statusText = getTaskStatusText(task.status);
 
+  const allPhotos = useMemo(() => {
+    const photos: string[] = [];
+    if (task.photoUrl) photos.push(task.photoUrl);
+    if (task.photoUrls) photos.push(...task.photoUrls);
+    return [...new Set(photos)];
+  }, [task.photoUrl, task.photoUrls]);
+
   const bgColorMap = {
     normal: '#E8F5E9',
     attention: '#FFFDE7',
@@ -50,6 +57,14 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onProcess, onComplete, onCall
   const handleClick = () => {
     Taro.navigateTo({
       url: `/pages/task-detail/index?id=${task.id}`
+    });
+  };
+
+  const handlePreviewPhoto = (e: React.MouseEvent, index: number) => {
+    e.stopPropagation();
+    Taro.previewImage({
+      current: allPhotos[index],
+      urls: allPhotos
     });
   };
 
@@ -112,10 +127,25 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onProcess, onComplete, onCall
         </View>
       )}
 
-      {task.photoUrl && (
-        <View className={styles.photoPreview}>
-          <Text className={styles.photoIcon}>📷</Text>
-          <Text className={styles.photoText}>已上传照片</Text>
+      {allPhotos.length > 0 && (
+        <View className={styles.photoSection}>
+          <Text className={styles.photoLabel}>现场照片 ({allPhotos.length})</Text>
+          <View className={styles.photoGrid}>
+            {allPhotos.slice(0, 3).map((photo, index) => (
+              <View
+                key={index}
+                className={styles.photoThumb}
+                onClick={(e) => handlePreviewPhoto(e, index)}
+              >
+                <Text className={styles.photoThumbIcon}>📷</Text>
+              </View>
+            ))}
+            {allPhotos.length > 3 && (
+              <View className={styles.photoThumb}>
+                <Text className={styles.photoMoreText}>+{allPhotos.length - 3}</Text>
+              </View>
+            )}
+          </View>
         </View>
       )}
 

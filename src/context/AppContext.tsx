@@ -1,16 +1,19 @@
 import React, { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react';
-import { UserInfo, ShiftInfo, Task, Message, Record, TaskStatus } from '@/types';
+import { UserInfo, ShiftInfo, Task, TaskTimelineItem, Message, Record, TaskStatus } from '@/types';
 import { mockTasks } from '@/data/mockTasks';
 import { mockMessages } from '@/data/mockMessages';
 import { mockRecords } from '@/data/mockRecords';
+import { getCurrentDateTime } from '@/utils';
 
 interface TaskUpdateData {
   description?: string;
   measures?: string;
   photoUrl?: string;
+  photoUrls?: string[];
   reviewTime?: string;
   handler?: string;
   completedAt?: string;
+  timeline?: TaskTimelineItem[];
 }
 
 interface AppContextType {
@@ -30,6 +33,7 @@ interface AppContextType {
   markAllMessagesAsRead: () => void;
   addMessage: (message: Message) => void;
   addRecord: (record: Record) => void;
+  addReviewReminder: (task: Task) => void;
   refreshData: () => void;
 }
 
@@ -75,9 +79,27 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setTasks(prevTasks => {
       const newTasks = prevTasks.map(task => {
         if (task.id === taskId) {
+          const newTimeline: TaskTimelineItem[] = [...(task.timeline || [])];
+          if (status === 'processing' && task.status === 'pending') {
+            newTimeline.push({
+              time: getCurrentDateTime(),
+              action: '开始处理',
+              operator: updates?.handler,
+              detail: updates?.description || '开始处理任务'
+            });
+          }
+          if (status === 'completed') {
+            newTimeline.push({
+              time: getCurrentDateTime(),
+              action: '完成处理',
+              operator: updates?.handler,
+              detail: updates?.measures || '任务处理完成'
+            });
+          }
           return {
             ...task,
             status,
+            timeline: updates?.timeline || newTimeline,
             ...updates
           };
         }
@@ -132,6 +154,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setRecords(prevRecords => [record, ...prevRecords]);
   }, []);
 
+  const addReviewReminder = useCallback((task: Task) => {
+    const reminder: Message = {
+      id: Date.now().toString(36) + Math.random().toString(36).substr(2, 9),
+      type: 'reminder',
+      title: '复查提醒',
+      content: `${task.gunPositionName}(${task.gunPositionCode})已到复查时间，请及时复查温度`,
+      isRead: false,
+      createdAt: getCurrentDateTime(),
+      relatedId: task.id
+    };
+    setMessages(prevMessages => [reminder, ...prevMessages]);
+  }, []);
+
   const refreshData = useCallback(() => {
     setTasks([...mockTasks]);
     setMessages([...mockMessages]);
@@ -157,6 +192,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         markAllMessagesAsRead,
         addMessage,
         addRecord,
+        addReviewReminder,
         refreshData
       }}
     >

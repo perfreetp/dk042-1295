@@ -126,6 +126,7 @@ const TasksPage: React.FC = () => {
       description: description || currentTask.description,
       measures: measures || currentTask.measures,
       photoUrl: photos.length > 0 ? photos[0] : currentTask.photoUrl,
+      photoUrls: photos.length > 0 ? photos : currentTask.photoUrls,
       reviewTime: reviewTime || currentTask.reviewTime,
       handler: userInfo.name,
       completedAt: newStatus === 'completed' ? now : currentTask.completedAt

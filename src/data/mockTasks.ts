@@ -155,10 +155,11 @@ export interface CreateTaskData {
   measures?: string;
   photoUrls?: string[];
   reporter?: string;
+  riskLevel?: RiskLevel;
 }
 
 export const createExceptionTask = (data: CreateTaskData): Task => {
-  const riskLevel = getRiskByTemperature(data.temperature, data.temperatureRise) as RiskLevel;
+  const riskLevel = data.riskLevel || getRiskByTemperature(data.temperature, data.temperatureRise) as RiskLevel;
   const isUrgent = riskLevel === 'danger' || riskLevel === 'warning';
 
   return {
@@ -175,6 +176,7 @@ export const createExceptionTask = (data: CreateTaskData): Task => {
     createdAt: getCurrentDateTime(),
     isUrgent,
     measures: data.measures,
-    photoUrl: data.photoUrls?.[0]
+    photoUrl: data.photoUrls?.[0],
+    photoUrls: data.photoUrls
   };
 };

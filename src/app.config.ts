@@ -6,6 +6,7 @@ export default defineAppConfig({
     'pages/messages/index',
     'pages/records/index',
     'pages/task-detail/index',
+    'pages/report-result/index',
     'pages/record-detail/index',
     'pages/exception-detail/index'
   ],

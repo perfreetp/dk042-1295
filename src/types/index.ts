@@ -31,8 +31,17 @@ export interface Task {
   handler?: string;
   measures?: string;
   photoUrl?: string;
+  photoUrls?: string[];
   reviewTime?: string;
   isUrgent: boolean;
+  timeline?: TaskTimelineItem[];
+}
+
+export interface TaskTimelineItem {
+  time: string;
+  action: string;
+  operator?: string;
+  detail?: string;
 }
 
 export interface ExceptionReport {

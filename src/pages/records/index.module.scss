@@ -214,3 +214,94 @@
   color: $color-text-tertiary;
   margin-top: $spacing-xs;
 }
+
+.shiftSummarySection {
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.shiftSummaryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-lg;
+}
+
+.shiftSummaryTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.shiftSummaryShift {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.summaryCards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $spacing-sm;
+  margin-bottom: $spacing-lg;
+}
+
+.summaryCard {
+  text-align: center;
+  padding: $spacing-md $spacing-xs;
+  background-color: $color-bg-light;
+  border-radius: $radius-md;
+}
+
+.summaryCardNumber {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  display: block;
+}
+
+.summaryCardLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: $spacing-xs;
+  display: block;
+}
+
+.summaryDetail {
+  border-top: 1rpx solid $color-divider;
+  padding-top: $spacing-md;
+}
+
+.summaryDetailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.summaryDetailLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  flex-shrink: 0;
+}
+
+.riskDistribution {
+  display: flex;
+  gap: $spacing-sm;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.riskDistItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $spacing-xs $spacing-sm;
+  border-radius: $radius-sm;
+  min-width: 72rpx;
+}
