@@ -1,26 +1,36 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
-import { mockRecords, getStatistics } from '@/data/mockRecords';
 import { RiskLevel } from '@/types';
 import {
   getRiskLevelText,
   getRiskLevelColor,
-  classnames
+  classnames,
+  getCurrentDate
 } from '@/utils';
 import RecordCard from '@/components/RecordCard';
 import { useAppContext } from '@/context/AppContext';
 import styles from './index.module.scss';
 
 const RecordsPage: React.FC = () => {
-  const { userInfo } = useAppContext();
+  const { userInfo, records, completionRate } = useAppContext();
   const [dateFilter, setDateFilter] = useState<string>('all');
   const [riskFilter, setRiskFilter] = useState<string>('all');
+  const today = getCurrentDate();
 
-  const statistics = useMemo(() => getStatistics(), []);
+  const statistics = useMemo(() => {
+    const total = records.length;
+    const byRisk = {
+      normal: records.filter(r => r.riskLevel === 'normal').length,
+      attention: records.filter(r => r.riskLevel === 'attention').length,
+      warning: records.filter(r => r.riskLevel === 'warning').length,
+      danger: records.filter(r => r.riskLevel === 'danger').length
+    };
+    return { total, byRisk };
+  }, [records]);
 
   const dateOptions = [
     { value: 'all', label: '全部' },
-    { value: '2026-06-16', label: '今天' },
+    { value: today, label: '今天' },
     { value: '2026-06-15', label: '昨天' },
     { value: '2026-06-14', label: '前天' },
     { value: '2026-06-13', label: '更早' }
@@ -35,22 +45,22 @@ const RecordsPage: React.FC = () => {
   ];
 
   const filteredRecords = useMemo(() => {
-    let records = mockRecords;
+    let filtered = records;
 
     if (dateFilter !== 'all') {
       if (dateFilter === '2026-06-13') {
-        records = records.filter(r => r.date <= '2026-06-13');
+        filtered = filtered.filter(r => r.date <= '2026-06-13');
       } else {
-        records = records.filter(r => r.date === dateFilter);
+        filtered = filtered.filter(r => r.date === dateFilter);
       }
     }
 
     if (riskFilter !== 'all') {
-      records = records.filter(r => r.riskLevel === riskFilter);
+      filtered = filtered.filter(r => r.riskLevel === riskFilter);
     }
 
-    return records;
-  }, [dateFilter, riskFilter]);
+    return filtered;
+  }, [records, dateFilter, riskFilter]);
 
   const riskBgColors: Record<string, string> = {
     normal: '#E8F5E9',
@@ -62,7 +72,6 @@ const RecordsPage: React.FC = () => {
 
   return (
     <ScrollView className={styles.recordsPage} scrollY>
-      {/* 个人信息 */}
       <View className={styles.profileSection}>
         <View className={styles.userInfo}>
           <View className={styles.avatar}>
@@ -88,13 +97,12 @@ const RecordsPage: React.FC = () => {
             <Text className={styles.statLabel}>异常</Text>
           </View>
           <View className={styles.statItem}>
-            <Text className={styles.statNumber}>98%</Text>
+            <Text className={styles.statNumber}>{completionRate}%</Text>
             <Text className={styles.statLabel}>完成率</Text>
           </View>
         </View>
       </View>
 
-      {/* 风险统计 */}
       <View className={styles.summarySection}>
         <Text className={styles.summaryTitle}>风险分布</Text>
         <View className={styles.summaryGrid}>
@@ -116,7 +124,6 @@ const RecordsPage: React.FC = () => {
         </View>
       </View>
 
-      {/* 筛选 */}
       <View className={styles.filterSection}>
         <View className={styles.filterRow}>
           <Text className={styles.filterLabel}>日期:</Text>
@@ -152,7 +159,6 @@ const RecordsPage: React.FC = () => {
         </View>
       </View>
 
-      {/* 记录列表 */}
       <View className={styles.recordsList}>
         {filteredRecords.length > 0 ? (
           filteredRecords.map((record) => (

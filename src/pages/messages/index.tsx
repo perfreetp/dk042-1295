@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
 import Taro from '@tarojs/taro';
-import { mockMessages, markAsRead, markAllAsRead, getUnreadCount } from '@/data/mockMessages';
 import { Message, MessageType } from '@/types';
 import {
   getMessageTypeText,
@@ -15,11 +14,9 @@ import styles from './index.module.scss';
 type FilterType = 'all' | MessageType;
 
 const MessagesPage: React.FC = () => {
-  const { refreshData } = useAppContext();
+  const { messages, unreadCount, markMessageAsRead, markAllMessagesAsRead } = useAppContext();
   const [filter, setFilter] = useState<FilterType>('all');
-  const [messages, setMessages] = useState(mockMessages);
 
-  const unreadCount = useMemo(() => getUnreadCount(), []);
   const alertCount = useMemo(() => messages.filter(m => m.type === 'alert' && !m.isRead).length, [messages]);
   const reminderCount = useMemo(() => messages.filter(m => m.type === 'reminder' && !m.isRead).length, [messages]);
 
@@ -38,9 +35,10 @@ const MessagesPage: React.FC = () => {
 
   const handleMessageClick = useCallback((message: Message) => {
     console.log('[Message] 查看消息详情:', message.id);
-    markAsRead(message.id);
-    setMessages([...mockMessages]);
-    refreshData();
+
+    if (!message.isRead) {
+      markMessageAsRead(message.id);
+    }
 
     if (message.relatedId) {
       if (message.type === 'alert') {
@@ -53,22 +51,19 @@ const MessagesPage: React.FC = () => {
         });
       }
     }
-  }, [refreshData]);
+  }, [markMessageAsRead]);
 
   const handleMarkAllRead = useCallback(() => {
     console.log('[Message] 标记全部已读');
-    markAllAsRead();
-    setMessages([...mockMessages]);
-    refreshData();
+    markAllMessagesAsRead();
     Taro.showToast({
       title: '已全部标为已读',
       icon: 'success'
     });
-  }, [refreshData]);
+  }, [markAllMessagesAsRead]);
 
   return (
     <View className={styles.messagesPage}>
-      {/* 头部 */}
       <View className={styles.headerSection}>
         <Text className={styles.pageTitle}>消息提醒</Text>
         {unreadCount > 0 && (
@@ -78,7 +73,6 @@ const MessagesPage: React.FC = () => {
         )}
       </View>
 
-      {/* 筛选标签 */}
       <ScrollView scrollX className={styles.filterSection}>
         {filters.map((f) => (
           <View
@@ -96,7 +90,6 @@ const MessagesPage: React.FC = () => {
         ))}
       </ScrollView>
 
-      {/* 统计卡片 */}
       {filter === 'all' && (
         <View className={styles.statsSection}>
           <View className={styles.statCard}>
@@ -120,7 +113,6 @@ const MessagesPage: React.FC = () => {
         </View>
       )}
 
-      {/* 消息列表 */}
       <ScrollView scrollY>
         <View className={styles.messagesList}>
           {filteredMessages.length > 0 ? (

@@ -202,3 +202,36 @@
   color: $color-success;
   font-weight: $font-weight-medium;
 }
+
+.reviewBox {
+  margin-top: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  background-color: $color-bg-warning-light;
+  border-radius: $radius-md;
+  border-left: 4px solid $color-warning;
+}
+
+.reviewText {
+  font-size: $font-size-sm;
+  color: $color-warning;
+  font-weight: $font-weight-medium;
+}
+
+.photoPreview {
+  display: flex;
+  align-items: center;
+  margin-top: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  background-color: $color-bg-light;
+  border-radius: $radius-md;
+}
+
+.photoIcon {
+  font-size: $font-size-lg;
+  margin-right: $spacing-sm;
+}
+
+.photoText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}

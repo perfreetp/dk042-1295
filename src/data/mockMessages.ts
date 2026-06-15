@@ -1,4 +1,5 @@
-import { Message } from '@/types';
+import { Message, MessageType, RiskLevel } from '@/types';
+import { generateId, getCurrentDateTime, getRiskLevelText } from '@/utils';
 
 export const mockMessages: Message[] = [
   {
@@ -86,4 +87,35 @@ export const markAsRead = (id: string): void => {
 
 export const markAllAsRead = (): void => {
   mockMessages.forEach(m => m.isRead = true);
+};
+
+export interface CreateAlertMessageData {
+  gunPositionName: string;
+  gunPositionCode: string;
+  temperature: number;
+  temperatureRise: number;
+  riskLevel: RiskLevel;
+  relatedId: string;
+}
+
+export const createAlertMessage = (data: CreateAlertMessageData): Message => {
+  const riskText = getRiskLevelText(data.riskLevel);
+  const type: MessageType = data.riskLevel === 'danger' || data.riskLevel === 'warning' ? 'alert' : 'reminder';
+
+  const contentMap = {
+    danger: `${data.gunPositionName}(${data.gunPositionCode})温度达${data.temperature}℃，温升${data.temperatureRise}K，${riskText}级别，请立即处理！`,
+    warning: `${data.gunPositionName}(${data.gunPositionCode})温度${data.temperature}℃，温升${data.temperatureRise}K，${riskText}级别，请及时处理！`,
+    attention: `${data.gunPositionName}(${data.gunPositionCode})温度${data.temperature}℃，温升${data.temperatureRise}K，${riskText}级别，请关注！`,
+    normal: `${data.gunPositionName}(${data.gunPositionCode})温度${data.temperature}℃，温升${data.temperatureRise}K，运行正常`
+  };
+
+  return {
+    id: generateId(),
+    type,
+    title: type === 'alert' ? '异常告警' : '温度提醒',
+    content: contentMap[data.riskLevel],
+    isRead: false,
+    createdAt: getCurrentDateTime(),
+    relatedId: data.relatedId
+  };
 };

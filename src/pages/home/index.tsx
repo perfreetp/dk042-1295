@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import { useAppContext } from '@/context/AppContext';
 import { getShiftTypeText } from '@/utils';
 import { mockGunPositions, getKeyGunPositions } from '@/data/mockGunPositions';
-import { getTasksByStatus, getCompletionRate, getPendingTasksCount } from '@/data/mockTasks';
 import { mockActions } from '@/data/mockActions';
 import RiskCard from '@/components/RiskCard';
 import ProgressBar from '@/components/ProgressBar';
@@ -15,25 +14,16 @@ import { RiskLevel } from '@/types';
 import styles from './index.module.scss';
 
 const HomePage: React.FC = () => {
-  const { userInfo, shiftInfo, showHandoverModal, setShowHandoverModal, refreshData } = useAppContext();
-  const [keyGunPositions, setKeyGunPositions] = useState(getKeyGunPositions());
-  const [completionRate, setCompletionRate] = useState(getCompletionRate());
-  const [pendingCount, setPendingCount] = useState(getPendingTasksCount());
-
-  useEffect(() => {
-    refreshData();
-    setKeyGunPositions(getKeyGunPositions());
-    setCompletionRate(getCompletionRate());
-    setPendingCount(getPendingTasksCount());
-  }, []);
+  const { userInfo, shiftInfo, tasks, showHandoverModal, setShowHandoverModal, completionRate, pendingCount } = useAppContext();
+  const [keyGunPositions] = useState(getKeyGunPositions());
 
   const getRiskCount = (level: RiskLevel): number => {
     return mockGunPositions.filter(g => g.riskLevel === level).length;
   };
 
-  const completedTasks = getTasksByStatus('completed').length;
-  const processingTasks = getTasksByStatus('processing').length;
-  const totalTasks = mockGunPositions.length;
+  const completedTasks = useMemo(() => tasks.filter(t => t.status === 'completed').length, [tasks]);
+  const processingTasks = useMemo(() => tasks.filter(t => t.status === 'processing').length, [tasks]);
+  const totalTasks = useMemo(() => tasks.length, [tasks]);
 
   const handleCloseModal = () => {
     setShowHandoverModal(false);
@@ -47,7 +37,6 @@ const HomePage: React.FC = () => {
 
   return (
     <ScrollView className={styles.homePage} scrollY>
-      {/* 班前弹窗 */}
       <ModalPopup
         visible={showHandoverModal}
         title="交接班提醒"
@@ -57,7 +46,6 @@ const HomePage: React.FC = () => {
         confirmText="开始巡检"
       />
 
-      {/* 用户信息区域 */}
       <View className={styles.userSection}>
         <View className={styles.userInfo}>
           <View className={styles.avatar}>
@@ -85,7 +73,6 @@ const HomePage: React.FC = () => {
         </View>
       </View>
 
-      {/* 本班完成率 */}
       <View className={styles.completionSection}>
         <Text className={styles.sectionTitle}>本班完成率</Text>
         <View className={styles.completionCard}>
@@ -115,7 +102,6 @@ const HomePage: React.FC = () => {
         </View>
       </View>
 
-      {/* 风险等级总览 */}
       <View className={styles.riskSection}>
         <Text className={styles.sectionTitle}>风险等级总览</Text>
         <View className={styles.riskGrid}>
@@ -126,7 +112,6 @@ const HomePage: React.FC = () => {
         </View>
       </View>
 
-      {/* 重点枪位 */}
       <View className={styles.keyPointsSection}>
         <View className={styles.sectionHeader}>
           <Text className={styles.sectionTitle}>重点枪位</Text>
@@ -139,7 +124,6 @@ const HomePage: React.FC = () => {
         </View>
       </View>
 
-      {/* 常见处置动作 */}
       <View className={styles.actionsSection}>
         <Text className={styles.sectionTitle}>常见处置动作</Text>
         <View className={styles.actionList}>

@@ -1,18 +1,18 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { View, Text, ScrollView, Textarea, Input, Button } from '@tarojs/components';
 import Taro from '@tarojs/taro';
-import { mockTasks, getTasksByStatus } from '@/data/mockTasks';
 import { Task, TaskStatus } from '@/types';
-import { getTaskStatusColor, getTaskStatusText, classnames } from '@/utils';
+import { getTaskStatusColor, getTaskStatusText, classnames, getCurrentDateTime, getMockVoiceText } from '@/utils';
 import TaskCard from '@/components/TaskCard';
 import ActionButton from '@/components/ActionButton';
 import { useAppContext } from '@/context/AppContext';
+import { createReportRecord } from '@/data/mockRecords';
 import styles from './index.module.scss';
 
 type FilterType = 'all' | TaskStatus;
 
 const TasksPage: React.FC = () => {
-  const { userInfo, refreshData } = useAppContext();
+  const { userInfo, tasks, updateTaskStatus, addRecord } = useAppContext();
   const [filter, setFilter] = useState<FilterType>('all');
   const [showSheet, setShowSheet] = useState(false);
   const [currentTask, setCurrentTask] = useState<Task | null>(null);
@@ -25,12 +25,15 @@ const TasksPage: React.FC = () => {
   const [reviewTime, setReviewTime] = useState<string | null>(null);
   const [photos, setPhotos] = useState<string[]>([]);
 
-  const filteredTasks = getTasksByStatus(filter);
+  const filteredTasks = useMemo(() => {
+    if (filter === 'all') return tasks;
+    return tasks.filter(t => t.status === filter);
+  }, [tasks, filter]);
 
-  const allCount = mockTasks.length;
-  const pendingCount = getTasksByStatus('pending').length;
-  const processingCount = getTasksByStatus('processing').length;
-  const completedCount = getTasksByStatus('completed').length;
+  const allCount = tasks.length;
+  const pendingCount = tasks.filter(t => t.status === 'pending').length;
+  const processingCount = tasks.filter(t => t.status === 'processing').length;
+  const completedCount = tasks.filter(t => t.status === 'completed').length;
 
   const filters: { key: FilterType; label: string; count: number }[] = [
     { key: 'all', label: '全部', count: allCount },
@@ -49,24 +52,24 @@ const TasksPage: React.FC = () => {
   const handleProcess = useCallback((task: Task) => {
     setCurrentTask(task);
     setSheetType('process');
-    setMeasures('');
+    setMeasures(task.measures || '');
     setDescription('');
     setCurrentTemp(task.temperature.toString());
     setCurrentRise(task.temperatureRise.toString());
     setReviewTime(null);
-    setPhotos([]);
+    setPhotos(task.photoUrl ? [task.photoUrl] : []);
     setShowSheet(true);
   }, []);
 
   const handleComplete = useCallback((task: Task) => {
     setCurrentTask(task);
     setSheetType('complete');
-    setMeasures('');
+    setMeasures(task.measures || '');
     setDescription('');
     setCurrentTemp(task.temperature.toString());
     setCurrentRise(task.temperatureRise.toString());
     setReviewTime(null);
-    setPhotos([]);
+    setPhotos(task.photoUrl ? [task.photoUrl] : []);
     setShowSheet(true);
   }, []);
 
@@ -86,9 +89,16 @@ const TasksPage: React.FC = () => {
 
   const handleVoiceInput = useCallback(() => {
     console.log('[Task] 启动语音输入');
+    const voiceText = getMockVoiceText();
+    setDescription(prev => {
+      if (prev.trim()) {
+        return prev + '\n' + voiceText;
+      }
+      return voiceText;
+    });
     Taro.showToast({
-      title: '语音输入功能',
-      icon: 'none'
+      title: '语音识别完成',
+      icon: 'success'
     });
   }, []);
 
@@ -99,25 +109,49 @@ const TasksPage: React.FC = () => {
       sizeType: ['compressed'],
       sourceType: ['camera']
     }).then((res) => {
-      setPhotos([...photos, res.tempFilePaths[0]]);
+      setPhotos(prev => [...prev, res.tempFilePaths[0]]);
       console.log('[Task] 拍照成功:', res.tempFilePaths[0]);
     }).catch((err) => {
       console.error('[Task] 拍照失败:', err);
     });
-  }, [photos]);
+  }, []);
 
   const handleSubmit = useCallback(() => {
     if (!currentTask) return;
 
+    const newStatus: TaskStatus = sheetType === 'complete' ? 'completed' : 'processing';
+    const now = getCurrentDateTime();
+
+    const updates = {
+      description: description || currentTask.description,
+      measures: measures || currentTask.measures,
+      photoUrl: photos.length > 0 ? photos[0] : currentTask.photoUrl,
+      reviewTime: reviewTime || currentTask.reviewTime,
+      handler: userInfo.name,
+      completedAt: newStatus === 'completed' ? now : currentTask.completedAt
+    };
+
+    updateTaskStatus(currentTask.id, newStatus, updates);
+
+    if (newStatus === 'completed') {
+      const record = createReportRecord({
+        gunPositionName: currentTask.gunPositionName,
+        gunPositionCode: currentTask.gunPositionCode,
+        riskLevel: currentTask.riskLevel,
+        action: '任务完成',
+        description: description || '任务处理完成',
+        temperature: parseFloat(currentTemp) || currentTask.temperature,
+        temperatureRise: parseFloat(currentRise) || currentTask.temperatureRise,
+        measures: measures
+      });
+      addRecord(record);
+    }
+
     console.log('[Task] 提交处理结果:', {
       taskId: currentTask.id,
       type: sheetType,
-      measures,
-      description,
-      currentTemp,
-      currentRise,
-      reviewTime,
-      photos
+      status: newStatus,
+      ...updates
     });
 
     Taro.showToast({
@@ -126,8 +160,7 @@ const TasksPage: React.FC = () => {
     });
 
     setShowSheet(false);
-    refreshData();
-  }, [currentTask, sheetType, measures, description, currentTemp, currentRise, reviewTime, photos, refreshData]);
+  }, [currentTask, sheetType, description, measures, currentTemp, currentRise, reviewTime, photos, userInfo.name, updateTaskStatus, addRecord]);
 
   const handleCloseSheet = useCallback(() => {
     setShowSheet(false);
@@ -136,7 +169,6 @@ const TasksPage: React.FC = () => {
 
   return (
     <View className={styles.tasksPage}>
-      {/* 筛选标签 */}
       <View className={styles.filterSection}>
         {filters.map((f) => (
           <View
@@ -152,7 +184,6 @@ const TasksPage: React.FC = () => {
         ))}
       </View>
 
-      {/* 统计卡片 */}
       <View className={styles.statsSection}>
         <View className={styles.statsGrid}>
           <View className={styles.statCard}>
@@ -176,7 +207,6 @@ const TasksPage: React.FC = () => {
         </View>
       </View>
 
-      {/* 任务列表 */}
       <ScrollView scrollY>
         <View className={styles.tasksSection}>
           <Text className={styles.sectionTitle}>
@@ -203,10 +233,8 @@ const TasksPage: React.FC = () => {
         </View>
       </ScrollView>
 
-      {/* 遮罩层 */}
       {showSheet && <View className={styles.overlay} onClick={handleCloseSheet} />}
 
-      {/* 底部操作面板 */}
       {showSheet && (
         <View className={styles.actionSheet}>
           <Text className={styles.sheetTitle}>

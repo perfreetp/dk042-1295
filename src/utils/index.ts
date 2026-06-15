@@ -115,3 +115,36 @@ export const classnames = (...args: (string | undefined | null | false | Record<
   });
   return classes.join(' ');
 };
+
+export const generateId = (): string => {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+};
+
+export const getCurrentDateTime = (): string => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = (now.getMonth() + 1).toString().padStart(2, '0');
+  const day = now.getDate().toString().padStart(2, '0');
+  const hours = now.getHours().toString().padStart(2, '0');
+  const minutes = now.getMinutes().toString().padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
+};
+
+export const getCurrentDate = (): string => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = (now.getMonth() + 1).toString().padStart(2, '0');
+  const day = now.getDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+export const getMockVoiceText = (): string => {
+  const texts = [
+    '现场检查发现枪线接头处有轻微发热，温度约65度，已开启通风设备，持续观察中',
+    '枪线温度正常，无异常，温升8K左右，一切正常',
+    '发现3号枪温度偏高，已记录数据，建议后续加强监测',
+    '现场测温枪线温度72度，温升35K，已采取降温措施，需要维修人员到场处理',
+    '交接班检查确认，所有设备运行正常，无异常情况'
+  ];
+  return texts[Math.floor(Math.random() * texts.length)];
+};

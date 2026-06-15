@@ -2,19 +2,23 @@ import React, { useState, useCallback } from 'react';
 import { View, Text, Input, Textarea, ScrollView } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import { mockGunPositions } from '@/data/mockGunPositions';
+import { createExceptionTask } from '@/data/mockTasks';
+import { createAlertMessage } from '@/data/mockMessages';
+import { createReportRecord } from '@/data/mockRecords';
 import { RiskLevel } from '@/types';
 import {
   getRiskLevelText,
   getRiskLevelColor,
   classnames,
-  getRiskByTemperature
+  getRiskByTemperature,
+  getMockVoiceText
 } from '@/utils';
 import ActionButton from '@/components/ActionButton';
 import { useAppContext } from '@/context/AppContext';
 import styles from './index.module.scss';
 
 const ReportPage: React.FC = () => {
-  const { userInfo, refreshData } = useAppContext();
+  const { userInfo, addTask, addMessage, addRecord } = useAppContext();
 
   const [selectedGun, setSelectedGun] = useState<string | null>(null);
   const [riskLevel, setRiskLevel] = useState<RiskLevel | null>(null);
@@ -48,7 +52,7 @@ const ReportPage: React.FC = () => {
     if (!isNaN(temp) && temperatureRise) {
       const rise = parseFloat(temperatureRise);
       if (!isNaN(rise)) {
-        const autoRisk = getRiskByTemperature(temp, rise);
+        const autoRisk = getRiskByTemperature(temp, rise) as RiskLevel;
         setRiskLevel(autoRisk);
       }
     }
@@ -61,7 +65,7 @@ const ReportPage: React.FC = () => {
     if (!isNaN(rise) && temperature) {
       const temp = parseFloat(temperature);
       if (!isNaN(temp)) {
-        const autoRisk = getRiskByTemperature(temp, rise);
+        const autoRisk = getRiskByTemperature(temp, rise) as RiskLevel;
         setRiskLevel(autoRisk);
       }
     }
@@ -69,9 +73,16 @@ const ReportPage: React.FC = () => {
 
   const handleVoiceInput = useCallback(() => {
     console.log('[Report] 启动语音输入');
+    const voiceText = getMockVoiceText();
+    setDescription(prev => {
+      if (prev.trim()) {
+        return prev + '\n' + voiceText;
+      }
+      return voiceText;
+    });
     Taro.showToast({
-      title: '语音输入功能',
-      icon: 'none'
+      title: '语音识别完成',
+      icon: 'success'
     });
   }, []);
 
@@ -82,7 +93,7 @@ const ReportPage: React.FC = () => {
       sizeType: ['compressed'],
       sourceType: ['camera']
     }).then((res) => {
-      setPhotos([...photos, res.tempFilePaths[0]]);
+      setPhotos(prev => [...prev, res.tempFilePaths[0]]);
       console.log('[Report] 拍照成功:', res.tempFilePaths[0]);
     }).catch((err) => {
       console.error('[Report] 拍照失败:', err);
@@ -126,27 +137,65 @@ const ReportPage: React.FC = () => {
       return;
     }
 
+    const gunPosition = mockGunPositions.find(g => g.id === selectedGun);
+    if (!gunPosition) {
+      Taro.showToast({ title: '枪位信息错误', icon: 'none' });
+      return;
+    }
+
     const allMeasures = [...measures];
     if (customMeasure.trim()) {
       allMeasures.push(customMeasure.trim());
     }
+    const measuresStr = allMeasures.join('；');
 
-    const reportData = {
+    const tempVal = parseFloat(temperature);
+    const riseVal = parseFloat(temperatureRise);
+
+    const taskData = {
       gunPositionId: selectedGun,
-      gunPositionName: mockGunPositions.find(g => g.id === selectedGun)?.name,
-      gunPositionCode: mockGunPositions.find(g => g.id === selectedGun)?.code,
-      riskLevel,
-      temperature: parseFloat(temperature),
-      temperatureRise: parseFloat(temperatureRise),
-      description,
-      measures: allMeasures.join('; '),
+      gunPositionName: gunPosition.name,
+      gunPositionCode: gunPosition.code,
+      temperature: tempVal,
+      temperatureRise: riseVal,
+      description: description || '异常上报',
+      measures: measuresStr,
       photoUrls: photos,
-      reporter: userInfo.name,
-      repairCalled: false,
-      createdAt: new Date().toISOString()
+      reporter: userInfo.name
     };
 
-    console.log('[Report] 提交异常上报:', reportData);
+    const newTask = createExceptionTask(taskData);
+    addTask(newTask);
+
+    const messageData = {
+      gunPositionName: gunPosition.name,
+      gunPositionCode: gunPosition.code,
+      temperature: tempVal,
+      temperatureRise: riseVal,
+      riskLevel: riskLevel,
+      relatedId: newTask.id
+    };
+    const newMessage = createAlertMessage(messageData);
+    addMessage(newMessage);
+
+    const recordData = {
+      gunPositionName: gunPosition.name,
+      gunPositionCode: gunPosition.code,
+      riskLevel: riskLevel,
+      action: '异常上报',
+      description: description || '发现温度异常，已上报',
+      temperature: tempVal,
+      temperatureRise: riseVal,
+      measures: measuresStr
+    };
+    const newRecord = createReportRecord(recordData);
+    addRecord(newRecord);
+
+    console.log('[Report] 提交异常上报:', {
+      task: newTask,
+      message: newMessage,
+      record: newRecord
+    });
 
     Taro.showToast({
       title: '上报成功',
@@ -162,14 +211,12 @@ const ReportPage: React.FC = () => {
       setMeasures([]);
       setCustomMeasure('');
       setPhotos([]);
-      refreshData();
       Taro.switchTab({ url: '/pages/tasks/index' });
     }, 1500);
-  }, [selectedGun, riskLevel, temperature, temperatureRise, description, measures, customMeasure, photos, userInfo.name, refreshData]);
+  }, [selectedGun, riskLevel, temperature, temperatureRise, description, measures, customMeasure, photos, userInfo.name, addTask, addMessage, addRecord]);
 
   return (
     <ScrollView className={styles.reportPage} scrollY>
-      {/* 基本信息 */}
       <View className={styles.formCard}>
         <Text className={styles.sectionTitle}>基本信息</Text>
 
@@ -235,7 +282,6 @@ const ReportPage: React.FC = () => {
         </View>
       </View>
 
-      {/* 异常描述 */}
       <View className={styles.formCard}>
         <Text className={styles.sectionTitle}>异常描述</Text>
 
@@ -273,7 +319,6 @@ const ReportPage: React.FC = () => {
         </View>
       </View>
 
-      {/* 已采取措施 */}
       <View className={styles.formCard}>
         <Text className={styles.sectionTitle}>已采取的临时措施</Text>
 
@@ -302,7 +347,6 @@ const ReportPage: React.FC = () => {
         </View>
       </View>
 
-      {/* 操作按钮 */}
       <View className={styles.actionSection}>
         <View className={styles.quickActions}>
           <View className={styles.quickBtn}>

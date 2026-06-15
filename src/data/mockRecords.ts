@@ -1,4 +1,5 @@
-import { Record } from '@/types';
+import { Record, RiskLevel } from '@/types';
+import { generateId, getCurrentDateTime, getCurrentDate, getRiskLevelText } from '@/utils';
 
 export const mockRecords: Record[] = [
   {
@@ -126,4 +127,36 @@ export const getStatistics = () => {
     danger: mockRecords.filter(r => r.riskLevel === 'danger').length
   };
   return { total, byRisk };
+};
+
+export interface CreateRecordData {
+  gunPositionName: string;
+  gunPositionCode: string;
+  riskLevel: RiskLevel;
+  action: string;
+  description: string;
+  temperature?: number;
+  temperatureRise?: number;
+  measures?: string;
+}
+
+export const createReportRecord = (data: CreateRecordData): Record => {
+  let description = data.description;
+  if (data.temperature !== undefined && data.temperatureRise !== undefined) {
+    description += `，温度${data.temperature}℃，温升${data.temperatureRise}K`;
+  }
+  if (data.measures) {
+    description += `，已采取措施：${data.measures}`;
+  }
+
+  return {
+    id: generateId(),
+    date: getCurrentDate(),
+    gunPositionName: data.gunPositionName,
+    gunPositionCode: data.gunPositionCode,
+    riskLevel: data.riskLevel,
+    action: data.action,
+    description,
+    createdAt: getCurrentDateTime()
+  };
 };

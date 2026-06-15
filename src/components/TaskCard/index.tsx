@@ -104,6 +104,21 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onProcess, onComplete, onCall
         </View>
       )}
 
+      {task.reviewTime && (
+        <View className={styles.reviewBox}>
+          <Text className={styles.reviewText}>
+            ⏰ 复查提醒: {task.reviewTime}分钟后
+          </Text>
+        </View>
+      )}
+
+      {task.photoUrl && (
+        <View className={styles.photoPreview}>
+          <Text className={styles.photoIcon}>📷</Text>
+          <Text className={styles.photoText}>已上传照片</Text>
+        </View>
+      )}
+
       <View className={styles.taskFooter}>
         <Text className={styles.createTime}>{formatTime(task.createdAt)} 创建</Text>
 

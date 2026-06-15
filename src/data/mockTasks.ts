@@ -1,4 +1,5 @@
-import { Task } from '@/types';
+import { Task, RiskLevel } from '@/types';
+import { generateId, getCurrentDateTime, getRiskByTemperature } from '@/utils';
 
 export const mockTasks: Task[] = [
   {
@@ -142,4 +143,38 @@ export const getPendingTasksCount = (): number => {
 export const getCompletionRate = (): number => {
   const completed = mockTasks.filter(t => t.status === 'completed').length;
   return Math.round((completed / mockTasks.length) * 100);
+};
+
+export interface CreateTaskData {
+  gunPositionId: string;
+  gunPositionName: string;
+  gunPositionCode: string;
+  temperature: number;
+  temperatureRise: number;
+  description: string;
+  measures?: string;
+  photoUrls?: string[];
+  reporter?: string;
+}
+
+export const createExceptionTask = (data: CreateTaskData): Task => {
+  const riskLevel = getRiskByTemperature(data.temperature, data.temperatureRise) as RiskLevel;
+  const isUrgent = riskLevel === 'danger' || riskLevel === 'warning';
+
+  return {
+    id: generateId(),
+    gunPositionId: data.gunPositionId,
+    gunPositionName: data.gunPositionName,
+    gunPositionCode: data.gunPositionCode,
+    title: isUrgent ? '异常处理' : '温度异常巡检',
+    riskLevel,
+    status: 'pending',
+    description: data.description,
+    temperature: data.temperature,
+    temperatureRise: data.temperatureRise,
+    createdAt: getCurrentDateTime(),
+    isUrgent,
+    measures: data.measures,
+    photoUrl: data.photoUrls?.[0]
+  };
 };

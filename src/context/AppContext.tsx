@@ -1,16 +1,35 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { UserInfo, ShiftInfo, GunPosition, Task, Message } from '@/types';
-import { getUnreadCount } from '@/data/mockMessages';
-import { getCompletionRate, getPendingTasksCount } from '@/data/mockTasks';
+import React, { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react';
+import { UserInfo, ShiftInfo, Task, Message, Record, TaskStatus } from '@/types';
+import { mockTasks } from '@/data/mockTasks';
+import { mockMessages } from '@/data/mockMessages';
+import { mockRecords } from '@/data/mockRecords';
+
+interface TaskUpdateData {
+  description?: string;
+  measures?: string;
+  photoUrl?: string;
+  reviewTime?: string;
+  handler?: string;
+  completedAt?: string;
+}
 
 interface AppContextType {
   userInfo: UserInfo;
   shiftInfo: ShiftInfo;
+  tasks: Task[];
+  messages: Message[];
+  records: Record[];
   unreadCount: number;
   completionRate: number;
   pendingCount: number;
   showHandoverModal: boolean;
   setShowHandoverModal: (show: boolean) => void;
+  updateTaskStatus: (taskId: string, status: TaskStatus, updates?: TaskUpdateData) => void;
+  addTask: (task: Task) => void;
+  markMessageAsRead: (messageId: string) => void;
+  markAllMessagesAsRead: () => void;
+  addMessage: (message: Message) => void;
+  addRecord: (record: Record) => void;
   refreshData: () => void;
 }
 
@@ -23,7 +42,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     team: '白班一组'
   });
 
-  const [shiftInfo] = useState<ShiftInfo>({
+  const [shiftInfo, setShiftInfo] = useState<ShiftInfo>({
     date: '2026-06-16',
     shiftType: 'morning',
     startTime: '08:00',
@@ -33,15 +52,90 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     completionRate: 38
   });
 
-  const [unreadCount, setUnreadCount] = useState<number>(getUnreadCount());
-  const [completionRate, setCompletionRate] = useState<number>(getCompletionRate());
-  const [pendingCount, setPendingCount] = useState<number>(getPendingTasksCount());
+  const [tasks, setTasks] = useState<Task[]>([...mockTasks]);
+  const [messages, setMessages] = useState<Message[]>([...mockMessages]);
+  const [records, setRecords] = useState<Record[]>([...mockRecords]);
   const [showHandoverModal, setShowHandoverModal] = useState<boolean>(true);
 
+  const unreadCount = useMemo(() => {
+    return messages.filter(m => !m.isRead).length;
+  }, [messages]);
+
+  const completionRate = useMemo(() => {
+    if (tasks.length === 0) return 0;
+    const completed = tasks.filter(t => t.status === 'completed').length;
+    return Math.round((completed / tasks.length) * 100);
+  }, [tasks]);
+
+  const pendingCount = useMemo(() => {
+    return tasks.filter(t => t.status === 'pending').length;
+  }, [tasks]);
+
+  const updateTaskStatus = useCallback((taskId: string, status: TaskStatus, updates?: TaskUpdateData) => {
+    setTasks(prevTasks => {
+      const newTasks = prevTasks.map(task => {
+        if (task.id === taskId) {
+          return {
+            ...task,
+            status,
+            ...updates
+          };
+        }
+        return task;
+      });
+
+      const completed = newTasks.filter(t => t.status === 'completed').length;
+      setShiftInfo(prev => ({
+        ...prev,
+        completedTasks: completed,
+        totalTasks: newTasks.length,
+        completionRate: Math.round((completed / newTasks.length) * 100)
+      }));
+
+      return newTasks;
+    });
+  }, []);
+
+  const addTask = useCallback((task: Task) => {
+    setTasks(prevTasks => {
+      const newTasks = [task, ...prevTasks];
+      const completed = newTasks.filter(t => t.status === 'completed').length;
+      setShiftInfo(prev => ({
+        ...prev,
+        completedTasks: completed,
+        totalTasks: newTasks.length,
+        completionRate: Math.round((completed / newTasks.length) * 100)
+      }));
+      return newTasks;
+    });
+  }, []);
+
+  const markMessageAsRead = useCallback((messageId: string) => {
+    setMessages(prevMessages =>
+      prevMessages.map(msg =>
+        msg.id === messageId ? { ...msg, isRead: true } : msg
+      )
+    );
+  }, []);
+
+  const markAllMessagesAsRead = useCallback(() => {
+    setMessages(prevMessages =>
+      prevMessages.map(msg => ({ ...msg, isRead: true }))
+    );
+  }, []);
+
+  const addMessage = useCallback((message: Message) => {
+    setMessages(prevMessages => [message, ...prevMessages]);
+  }, []);
+
+  const addRecord = useCallback((record: Record) => {
+    setRecords(prevRecords => [record, ...prevRecords]);
+  }, []);
+
   const refreshData = useCallback(() => {
-    setUnreadCount(getUnreadCount());
-    setCompletionRate(getCompletionRate());
-    setPendingCount(getPendingTasksCount());
+    setTasks([...mockTasks]);
+    setMessages([...mockMessages]);
+    setRecords([...mockRecords]);
   }, []);
 
   return (
@@ -49,11 +143,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       value={{
         userInfo,
         shiftInfo,
+        tasks,
+        messages,
+        records,
         unreadCount,
         completionRate,
         pendingCount,
         showHandoverModal,
         setShowHandoverModal,
+        updateTaskStatus,
+        addTask,
+        markMessageAsRead,
+        markAllMessagesAsRead,
+        addMessage,
+        addRecord,
         refreshData
       }}
     >
